@@ -7,6 +7,7 @@ import logging
 import warnings
 from .models import ReloadRulesRequest
 from .restrictor import IPRestrictor
+from django.http import Http404
 try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:
@@ -56,7 +57,7 @@ class IPRestrictMiddleware(MiddlewareMixin):
                 for proxy in proxies:
                     if proxy not in self.trusted_proxies:
                         logger.warn("Client IP %s forwarded by untrusted proxy %s" % (client_ip, proxy))
-                        raise exceptions.PermissionDenied
+                        raise Http404
         return client_ip
 
     def get_forwarded_for(self, request):
