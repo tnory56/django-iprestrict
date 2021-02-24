@@ -25,11 +25,11 @@ class MiddlewareRestrictsTest(TestCase):
 
     def assert_url_is_restricted(self, url):
         response = self.client.get(url, REMOTE_ADDR=LOCAL_IP)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def assert_ip_is_restricted(self, ip):
         response = self.client.get('', REMOTE_ADDR=ip)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_middleware_restricts_every_url(self):
         self.assert_url_is_restricted('')
@@ -45,7 +45,7 @@ class MiddlewareRestrictsTest(TestCase):
 
     def test_middleware_allows_localhost(self):
         response = self.client.get('/some/url', REMOTE_ADDR='127.0.0.1')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
 
 def create_ip_allow_rule(ip=LOCAL_IP):
@@ -61,24 +61,24 @@ class MiddlewareAllowsTest(TestCase):
 
     def test_middleware_allows_localhost(self):
         response = self.client.get('')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_middleware_allows_ip_just_added(self):
         response = self.client.get('', REMOTE_ADDR=LOCAL_IP)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_middleware_restricts_other_ip(self):
         response = self.client.get('', REMOTE_ADDR='10.1.1.1')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     @override_settings(IPRESTRICT_TRUSTED_PROXIES=(PROXY,), ALLOW_PROXIES=False)
     def test_middleware_allows_if_proxy_is_trusted(self):
         response = self.client.get('', REMOTE_ADDR=PROXY, HTTP_X_FORWARDED_FOR=LOCAL_IP)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_middleware_restricts_if_proxy_is_not_trusted(self):
         response = self.client.get('', REMOTE_ADDR=PROXY, HTTP_X_FORWARDED_FOR=LOCAL_IP)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
 
 class ReloadRulesTest(TestCase):
@@ -90,7 +90,7 @@ class ReloadRulesTest(TestCase):
         call_command('reload_rules', verbosity=0)
 
         response = self.client.get('', REMOTE_ADDR=LOCAL_IP)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
 
 class MiddlewareExtractClientIpTest(TestCase):
