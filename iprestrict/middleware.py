@@ -42,7 +42,7 @@ class IPRestrictMiddleware(MiddlewareMixin):
 
         if self.restrictor.is_restricted(url, client_ip):
             logger.warn("Denying access of %s to %s" % (url, client_ip))
-            raise exceptions.PermissionDenied
+            raise Http404
 
     def extract_client_ip(self, request):
         client_ip = request.META['REMOTE_ADDR']
